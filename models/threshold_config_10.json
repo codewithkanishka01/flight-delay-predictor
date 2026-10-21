@@ -1,6 +1,6 @@
 {
-    "best_threshold_accuracy": 0.5,
-    "best_threshold_f1": 0.2,
+    "best_threshold_accuracy": 0.20,
+    "best_threshold_f1": 0.20,
     "validation_accuracy": 0.81795,
     "roc_auc": 0.6799194311405112
 }
