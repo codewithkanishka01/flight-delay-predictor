@@ -68,6 +68,21 @@ def index():
         model_loaded=(model is not None)
     )
 
+def parse_time(time_str):
+    if not time_str:
+        return 0, 0
+    t_str = str(time_str).strip()
+    for fmt in ("%H:%M", "%I:%M %p", "%I:%M%p", "%I:%M %P", "%I:%M%P", "%H%M"):
+        try:
+            t = datetime.strptime(t_str, fmt)
+            return t.hour, t.minute
+        except ValueError:
+            pass
+    if t_str.isdigit():
+        val = int(t_str)
+        return val // 100, val % 100
+    raise ValueError(f"Invalid time format: '{time_str}'. Please use HH:MM (e.g. 21:00) or 12-hour (e.g. 09:00 PM).")
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
@@ -95,13 +110,8 @@ def predict():
         day = fl_date.day
         day_of_week = fl_date.weekday() # Monday=0, Sunday=6
         
-        dep_time = datetime.strptime(crs_dep_time_str, "%H:%M")
-        crs_dep_hour = dep_time.hour
-        crs_dep_minute = dep_time.minute
-        
-        arr_time = datetime.strptime(crs_arr_time_str, "%H:%M")
-        crs_arr_hour = arr_time.hour
-        crs_arr_minute = arr_time.minute
+        crs_dep_hour, crs_dep_minute = parse_time(crs_dep_time_str)
+        crs_arr_hour, crs_arr_minute = parse_time(crs_arr_time_str)
         
         # 3. Create DataFrame matching training format
         input_data = {
