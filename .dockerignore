@@ -1,0 +1,17 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+*.csv
+*.parquet
+*.pkl
+*.pdf
+*.whl
+data/
+archive/
+.chrome_profile/
+.pylib/
+extracted_colab_images/
+slide_visuals/

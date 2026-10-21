@@ -1,0 +1,22 @@
+{
+    "final_test_accuracy": 0.8172835862386124,
+    "final_test_precision": 0.5573834704269487,
+    "final_test_recall": 0.013327339308626713,
+    "final_test_f1": 0.026032233869344897,
+    "final_test_roc_auc": 0.6688814310770286,
+    "tn": 474858,
+    "fp": 1130,
+    "fn": 105350,
+    "tp": 1423,
+    "confusion_matrix": [
+        [
+            474858,
+            1130
+        ],
+        [
+            105350,
+            1423
+        ]
+    ],
+    "genuine_90_achieved": false
+}

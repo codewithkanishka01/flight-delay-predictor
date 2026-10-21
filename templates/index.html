@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Delay Predictor - Pre-Departure Predictive Dashboard</title>
+    <meta name="description" content="A professional pre-departure flight delay prediction system utilizing machine learning to predict arrival delays of 15+ minutes prior to boarding.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="logo-area">
+                <span class="logo-icon">✈</span>
+                <h1>Flight Delay Predictor</h1>
+            </div>
+            <p class="subtitle">17-Phase Pre-Departure Machine Learning Pipeline Dashboard</p>
+        </header>
+
+        <!-- Main Dashboard Content Grid -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Interactive Predictor Form -->
+            <section class="card glass-card predictor-card">
+                <h2>Predict Flight Status</h2>
+                <p class="card-intro">Enter pre-departure flight schedule details. All features are verified target-leakage free.</p>
+                
+                <form id="predictionForm" method="POST" action="/predict">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="fl_date">Departure Date</label>
+                            <input type="date" id="fl_date" name="fl_date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="airline">Airline Carrier</label>
+                            <select id="airline" name="airline" required>
+                                <option value="" disabled selected>Select airline...</option>
+                                {% for carrier in airlines %}
+                                    <option value="{{ carrier }}">{{ carrier }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="origin">Origin Airport (Code)</label>
+                            <select id="origin" name="origin" required>
+                                <option value="" disabled selected>Select origin...</option>
+                                {% for port in airports %}
+                                    <option value="{{ port }}">{{ port }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dest">Destination Airport (Code)</label>
+                            <select id="dest" name="dest" required>
+                                <option value="" disabled selected>Select destination...</option>
+                                {% for port in airports %}
+                                    <option value="{{ port }}">{{ port }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="crs_dep_time">Scheduled Departure</label>
+                            <input type="time" id="crs_dep_time" name="crs_dep_time" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="crs_arr_time">Scheduled Arrival</label>
+                            <input type="time" id="crs_arr_time" name="crs_arr_time" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="distance">Flight Distance (miles)</label>
+                            <input type="number" id="distance" name="distance" placeholder="e.g. 1065" min="1" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        <span class="btn-text">Predict Delay Risk</span>
+                        <div class="loader" id="btnLoader"></div>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Panel: Model Info and Evaluation Metrics -->
+            <div class="stats-column">
+                <!-- Evaluation Metrics -->
+                <section class="card glass-card metrics-card animate-in">
+                    <h2>Model Performance</h2>
+                    <p class="card-intro">Untouched Test Set Evaluation Metrics (Stratified 80/20 Split on 2.9M rows)</p>
+                    
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <span class="metric-value">{{ "%.2f"|format(metrics.Accuracy * 100) }}%</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">{{ "%.2f"|format(metrics.Precision * 100) }}%</span>
+                            <span class="metric-label">Precision</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">{{ "%.2f"|format(metrics.Recall * 100) }}%</span>
+                            <span class="metric-label">Recall</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value">{{ "%.2f"|format(metrics.ROC_AUC * 100) }}%</span>
+                            <span class="metric-label">ROC-AUC</span>
+                        </div>
+                    </div>
+                    <div class="decision-threshold-info">
+                        <strong>Decision Threshold:</strong> Locked at <code>{{ threshold }}</code> on validation data to maximize classification accuracy.
+                    </div>
+                </section>
+
+                <!-- Inbalance and Leakage Details -->
+                <section class="card glass-card info-card animate-in" style="animation-delay: 0.1s;">
+                    <h2>Pre-Departure Constraints &amp; Class Imbalance</h2>
+                    
+                    <div class="info-item">
+                        <span class="info-badge badge-red">PRE-FLIGHT ONLY</span>
+                        <p><strong>Zero Target Leakage:</strong> We strictly exclude variables known only after boarding (e.g. <code>DEP_DELAY</code>, <code>TAXI_OUT</code>, <code>WHEELS_ON</code>, <code>ELAPSED_TIME</code>). All predictors are schedule-based, preventing data contamination.</p>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-badge badge-blue">CLASS DISTRIBUTION</span>
+                        <p><strong>Severe Imbalance:</strong> 81.68% Flights on-time/early, 18.32% Flights delayed (15+ min). Reaching a genuine 90%+ accuracy is constrained by the pre-departure feature space which lacks mid-flight operational data.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Prediction Results Modal -->
+    <div id="resultsModal" class="modal">
+        <div class="modal-content glass-card animate-scale">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">
+                <h2>Prediction Result</h2>
+                <div class="airline-meta" id="resultAirlineMeta">DL | Delta Air Lines</div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="result-display">
+                    <div class="result-gauge">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="resultProgress" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.35" class="percentage" id="resultProbText">0%</text>
+                        </svg>
+                    </div>
+                    <div class="result-text-area">
+                        <div class="result-status" id="resultStatus">ON TIME</div>
+                        <p class="result-explanation" id="resultExplanation">The flight is predicted to arrive with minimal or no delay.</p>
+                    </div>
+                </div>
+
+                <div class="resolved-details">
+                    <h3>Resolved Pre-Departure Variables:</h3>
+                    <div class="detail-row">
+                        <span>Origin Airport City:</span>
+                        <strong id="resOriginCity">Atlanta, GA</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Destination Airport City:</span>
+                        <strong id="resDestCity">Seattle, WA</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Model Decision Threshold:</span>
+                        <strong id="resThreshold">45.00%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AJAX Integration Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("predictionForm");
+            const submitBtn = document.getElementById("submitBtn");
+            const btnLoader = document.getElementById("btnLoader");
+            const btnText = submitBtn.querySelector(".btn-text");
+            const modal = document.getElementById("resultsModal");
+            const closeModal = document.getElementById("closeModal");
+            
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                
+                // Show loading spinner
+                submitBtn.disabled = true;
+                btnLoader.style.display = "block";
+                btnText.style.opacity = "0.5";
+                
+                const formData = new FormData(form);
+                
+                fetch("/predict", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    btnLoader.style.display = "none";
+                    btnText.style.opacity = "1";
+                    
+                    if (data.success) {
+                        // Populate results modal
+                        const isDelayed = data.prediction === 1;
+                        const statusEl = document.getElementById("resultStatus");
+                        const explanationEl = document.getElementById("resultExplanation");
+                        const progressEl = document.getElementById("resultProgress");
+                        const probTextEl = document.getElementById("resultProbText");
+                        const airlineMetaEl = document.getElementById("resultAirlineMeta");
+                        
+                        statusEl.innerText = data.delayed;
+                        
+                        if (isDelayed) {
+                            statusEl.className = "result-status delayed";
+                            explanationEl.innerText = "The model predicts that this flight has a high risk of arriving at least 15 minutes late. Pre-departure routing and schedules indicate potential bottlenecks.";
+                            progressEl.setAttribute("stroke", "#ff4a7d"); // Pink-red for delay
+                        } else {
+                            statusEl.className = "result-status on-time";
+                            explanationEl.innerText = "The model predicts that this flight has low delay risk. Scheduled times and historical airline metrics are favorable.";
+                            progressEl.setAttribute("stroke", "#10b981"); // Emerald green for on-time
+                        }
+                        
+                        // Set gauge value
+                        const probPercent = parseFloat(data.probability);
+                        progressEl.setAttribute("stroke-dasharray", `${probPercent}, 100`);
+                        probTextEl.innerText = data.probability;
+                        
+                        airlineMetaEl.innerText = `${data.airline_code} | ${formData.get("airline")}`;
+                        
+                        document.getElementById("resOriginCity").innerText = data.origin_city;
+                        document.getElementById("resDestCity").innerText = data.dest_city;
+                        document.getElementById("resThreshold").innerText = data.threshold;
+                        
+                        // Show modal
+                        modal.style.display = "flex";
+                    } else {
+                        alert("Prediction error: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    submitBtn.disabled = false;
+                    btnLoader.style.display = "none";
+                    btnText.style.opacity = "1";
+                    console.error("Error:", error);
+                    alert("An error occurred while making the prediction. Please try again.");
+                });
+            });
+            
+            // Modal closing events
+            closeModal.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+            
+            window.addEventListener("click", function(e) {
+                if (e.target === modal) {
+                    modal.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

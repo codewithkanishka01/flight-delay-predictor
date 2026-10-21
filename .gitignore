@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.pylib/
+*.whl
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Large Datasets and Files (>100MB or unnecessary for serving web app)
+*.csv
+*.parquet
+*.pkl
+data/
+archive/
+.chrome_profile/
+
+# Notebooks, PDFs and Images
+*.ipynb
+*.pdf
+*.png
+extracted_colab_images/
+slide_visuals/
+test*
+ppt_text_dump.txt
+=
+
+# Ignore other models except the locked production model
+models/*
+!models/xgb_model_tuned.json
+!models/mappings.json
+!models/threshold_config_10.json
+
+# Ignore other outputs except the test metrics json for the UI
+outputs/*
+!outputs/final_test_10_results.json
