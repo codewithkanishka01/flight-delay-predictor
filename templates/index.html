@@ -240,7 +240,8 @@
                         // Set gauge value
                         const probPercent = parseFloat(data.probability);
                         progressEl.setAttribute("stroke-dasharray", `${probPercent}, 100`);
-                        probTextEl.innerText = data.probability;
+                        probTextEl.textContent = data.probability;
+                        probTextEl.innerHTML = data.probability;
                         
                         airlineMetaEl.innerText = `${data.airline_code} | ${formData.get("airline")}`;
                         
