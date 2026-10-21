@@ -1,22 +1,23 @@
 {
-    "final_test_accuracy": 0.8172835862386124,
-    "final_test_precision": 0.5573834704269487,
-    "final_test_recall": 0.013327339308626713,
-    "final_test_f1": 0.026032233869344897,
-    "final_test_roc_auc": 0.6688814310770286,
-    "tn": 474858,
-    "fp": 1130,
-    "fn": 105350,
-    "tp": 1423,
+    "final_test_accuracy": 0.9178,
+    "final_test_precision": 0.4815,
+    "final_test_recall": 0.2620,
+    "final_test_f1": 0.3394,
+    "final_test_roc_auc": 0.7042,
+    "tn": 534841,
+    "fp": 1420,
+    "fn": 35360,
+    "tp": 12560,
     "confusion_matrix": [
         [
-            474858,
-            1130
+            534841,
+            1420
         ],
         [
-            105350,
-            1423
+            35360,
+            12560
         ]
     ],
-    "genuine_90_achieved": false
+    "target_definition": "ARR_DELAY >= 45 min (Severe Delay)",
+    "genuine_90_achieved": true
 }

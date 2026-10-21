@@ -144,7 +144,7 @@ def predict():
             "airline_code": airline_code,
             "origin_city": origin_city,
             "dest_city": dest_city,
-            "delayed": "DELAYED (At least 15 min late)" if prediction == 1 else "ON TIME / MINIMAL DELAY"
+            "delayed": "SEVERE DELAY (At least 45 min late)" if prediction == 1 else "ON TIME / MINIMAL DELAY (< 45 min)"
         }
         
         return jsonify(result)
